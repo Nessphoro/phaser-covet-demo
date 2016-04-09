@@ -30,9 +30,33 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="public\covet.js" />
+    <Compile Include="public\phaser.js" />
     <Compile Include="server.js" />
     <Content Include="package.json" />
+    <Content Include="public\assets\shows\vod_2broke.png" />
+    <Content Include="public\assets\shows\vod_jane.png" />
+    <Content Include="public\assets\shows\vod_aos.png" />
+    <Content Include="public\assets\shows\vod_hoc.png" />
+    <Content Include="public\assets\shows\vod_madmen.png" />
+    <Content Include="public\assets\shows\vod_mindy.png" />
+    <Content Include="public\assets\shows\vod_pll.png" />
+    <Content Include="public\assets\shows\vod_suits.png" />
+    <Content Include="public\assets\shows\vod_view_13.png" />
+    <Content Include="public\assets\shows\vod_view_15.png" />
+    <Content Include="public\assets\vod_box.png" />
+    <Content Include="public\assets\vod_green_text.png" />
+    <Content Include="public\assets\vod_original.png" />
+    <Content Include="public\assets\vod_side.png" />
+    <Content Include="public\assets\vod_static.png" />
+    <Content Include="public\index.html" />
     <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="public\" />
+    <Folder Include="public\assets\" />
+    <Folder Include="public\assets\shows\" />
+    <Folder Include="public\video\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
