@@ -1,0 +1,10 @@
+{
+  "name": "phaser",
+  "version": "0.0.0",
+  "description": "phaser",
+  "main": "server.js",
+  "author": {
+    "name": "pavlo",
+    "email": ""
+  }
+}
