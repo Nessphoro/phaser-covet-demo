@@ -8,6 +8,8 @@
     "email": ""
   },
   "dependencies": {
-    "express": "^4.13.4"
+    "ddp.js": "^2.1.0",
+    "express": "^4.13.4",
+    "minimongo-cache": "0.0.48"
   }
 }
