@@ -1,9 +1,10 @@
 ﻿var cache = require("./data.js").cache;
-
-var texts = ["Mindy Kaling", "Danny Castilano", "Jeremy Reed", "Morgan Tooker"]
 var scrolled = false;
-exports.create = function ()
-{
+exports.create = function () {
+    scrolled = false;
+    vod_box_mult = 1;
+    
+
     vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
     //vd.play(true);
@@ -14,12 +15,13 @@ exports.create = function ()
     top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
-
+    
+      
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     
     contentgroup = game.add.group();
     
-    var vod_static = game.add.sprite(351, 107, 'vod_show_static', null, contentgroup);
+    var vod_static = game.add.sprite(351, 107, 'vod_look_static', null, contentgroup);
     vod_static.scale.setTo(0.5, 0.5);
     
     var vod_side = game.add.sprite(0, 0, 'vod_side');
@@ -41,17 +43,14 @@ exports.create = function ()
     var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
     var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
     var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
-    showText = game.add.text(0, 296 + 264 + 10, texts[0], { font: 'normal normal normal "Avenir Next"', fontWeight: "400", fill: "#DCDCDC", fontSize: "20px" }, contentgroup)
-    showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
     
-    
-    window.vod_box = game.add.sprite(352 + 220 * 0, 296, "vod_box", null, contentgroup);
+    window.vod_box = game.add.sprite(349 + 220 * 0, 224, "vod_box_med", null, contentgroup);
     vod_box.scale.setTo(0.5, 0.5);
+    
+    require("./input.js").initInput();
     
     var bottom_shadow = game.add.sprite(322, 643, "vod_shadow_bottom");
     bottom_shadow.scale.setTo(0.5, 0.5);
-
-    require("./input.js").initInput();
     
     var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
     var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
@@ -62,30 +61,24 @@ exports.create = function ()
 exports.update = function () {
     vod_green.y = 147.5 - 37.5 * vod_green_mult;
     if (!scrolled) {
-        vod_box.x = 359 + 220 * vod_box_mult;
-        showText.x = 359 + 95 + 220 * vod_box_mult;
-        showText.text = texts[vod_box_mult];
-        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+        vod_box.x = 349 + 288 * vod_box_mult;
     }
     else {
-        vod_box.x = 352 + 215 * vod_box_mult;
-        showText.x = 352 + 17 + 220 * vod_box_mult;
-        showText.text = "";
-        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+        vod_box.x = 350 + 214 * vod_box_mult;
     }
 }
 
 function ScrollUp() {
-    vod_box.y = 296;
+    vod_box.y = 224;
     game.add.tween(contentgroup).to({ y: 0 }, 500, Phaser.Easing.Cubic.InOut, true);
-    vod_box.loadTexture("vod_box");
+    vod_box.loadTexture("vod_box_med");
     
     scrolled = false;
     vod_box_mult = 0;
 }
 
 function ScrollDown() {
-    vod_box.y = 296 + 382;
+    vod_box.y = 296 + 390;
     vod_box_mult = 0;
     game.add.tween(contentgroup).to({ y: -382 }, 500, Phaser.Easing.Cubic.InOut, true);
     vod_box.loadTexture("vod_box_item");

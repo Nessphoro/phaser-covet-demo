@@ -10081,10 +10081,28 @@ exports.regularizeUpsert = function(docs, bases, success, error) {
 exports.preload = function () {
     game.load.video("vod_video", "video/mindy.mp4");
     
+    game.load.image("vod_like", "assets/you-might-like-screen.png");
+    game.load.image("vod_logo", "assets/logo.png");
+    game.load.image("vod_overlay", "assets/overlay.png");
+    game.load.image("vod_shadow_bottom", "assets/bottom-shadow.png");
+    game.load.image("vod_shadow_top", "assets/top-shadow.png");
+    
     game.load.image('vod_static', 'assets/vod_static.png');
+    game.load.image("vod_show_static", "assets/vod_show_static.png");
+    game.load.image("vod_look_static", "assets/vod_look_static.png");
+    
+
     game.load.image('vod_side', 'assets/vod_side.png');
     game.load.image('vod_green_text', 'assets/vod_green_text.png');
     game.load.image('vod_box', 'assets/vod_box.png');
+    game.load.image('vod_box_big', 'assets/vod_main_look.png');
+    game.load.image('vod_box_item', 'assets/vod_item_box.png');
+    game.load.image("vod_box_med", "assets/vod_selection_look.png");
+    
+    game.load.image("vod_modal_mindy", "assets/item-modal-mindy.png");
+    
+    game.load.image("vod_button_green", "assets/buy-button-green.png");
+    game.load.image("vod_button_grey", "assets/buy-button-grey.png");
     
     game.load.image('vod_shows_2broke', 'assets/shows/vod_2broke.png');
     game.load.image('vod_shows_aos', 'assets/shows/vod_aos.png');
@@ -10099,7 +10117,7 @@ exports.preload = function () {
 };
 
 exports.create = function () {
-    game.state.start("vod_main");
+    game.state.start("vod_like");
 };
 },{}],25:[function(require,module,exports){
 window.game = new Phaser.Game(1280, 720, Phaser.AUTO, "");
@@ -10109,13 +10127,21 @@ var data = require("./data");
 var content = require("./content");
 var vod_main = require("./vod_main");
 var vod_show = require('./vod_show.js');
-debugger;
+var youmightlike = require("./youmightlike.js");
+var player = require('./player.js');
+var vod_look = require("./vod_look.js");
+var vod_items = require("./vod_items.js");
+
 game.state.add("boot", content);
+game.state.add("vod_like", youmightlike);
 game.state.add("vod_main", vod_main);
 game.state.add("vod_show", vod_show);
+game.state.add("vod_look", vod_look);
+game.state.add("vod_items", vod_items);
+game.state.add("player", player);
 
 game.state.start("boot");
-},{"./content":24,"./data":26,"./vod_main":28,"./vod_show.js":29}],26:[function(require,module,exports){
+},{"./content":24,"./data":26,"./player.js":28,"./vod_items.js":29,"./vod_look.js":30,"./vod_main":31,"./vod_show.js":32,"./youmightlike.js":33}],26:[function(require,module,exports){
 var DDP = require("ddp.js").default;
 var minimongo = require('minimongo-cache');
 var cache = new minimongo();
@@ -10213,8 +10239,8 @@ exports.initInput = function()
     var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
     upKey.onDown.add(goUp, this);
     
-    var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-    var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    var rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    var leftKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
     rightKey.onDown.add(goRight, this);
     leftKey.onDown.add(goLeft, this);
     
@@ -10235,41 +10261,251 @@ function fullscreen() {
 
 function goDown() {
     vod_green_mult--;
+    switch (vod_green_mult) {
+        case 0:
+            game.state.start("vod_like")
+            break;
+        case -1:
+            game.state.start("vod_main", true, false);
+            break;
+    }
 }
 
 function goUp() {
     vod_green_mult++;
+    switch (vod_green_mult) {
+        case 0:
+            game.state.start("vod_like")
+            break;
+        case -1:
+            game.state.start("vod_main", true, false);
+            break;
+    }
 }
 
 function goRight() {
-    if (game.state.current == "vod_main" || game.state.current == "vod_show") {
+    if (game.state.current == "vod_main" || game.state.current == "vod_show" || game.state.current == "vod_look") {
         vod_box_mult++;
+        if (vod_box_mult > 3)
+            vod_box_mult = 3;
+
     }
 }
 
 function goLeft() {
-    if (game.state.current == "vod_main" || game.state.current == "vod_show") {
+    if (game.state.current == "vod_main" || game.state.current == "vod_show" || game.state.current == "vod_look") {
         vod_box_mult--;
+        if (vod_box_mult < 0)
+            vod_box_mult = 0;
     }
 }
 
 function openShow() {
-    if(game.state.current == "vod_main")
+    if (game.state.current == "vod_main")
         game.state.start("vod_show", true, false, vod_box_mult);
     else if (game.state.current == "vod_show")
         game.state.start("vod_look", true, false, vod_box_mult);
+    else if (game.state.current == "vod_look")
+        game.state.start("vod_items", false, false, 0);
 }
 
 function goBack()
 {
     if (game.state.current == "vod_show")
         game.state.start("vod_main");
+    if (game.state.current == "vod_look")
+        game.state.start("vod_show");
+    if (game.state.current == "vod_items")
+        game.state.start("vod_look");
 }
 },{}],28:[function(require,module,exports){
+var bmd = null;
+
+exports.create = function () {
+    
+    
+
+    vd = game.add.video("vod_video");
+    vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
+    vd.play(true);
+    vd.mute = true;
+    
+    bmd = game.add.bitmapData(1280, 720);
+    bmd.addToWorld(0, 0, 0, 0, 1, 1);
+    
+    
+    var downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    downKey.onDown.add(goDown, this);
+    
+    var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    upKey.onDown.add(goUp, this);
+    
+    var spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    spacebar.onDown.add(pause, this);
+    
+}
+
+function goDown()
+{
+
+}
+
+function goUp()
+{
+
+}
+
+
+function pause()
+{
+    vd.paused = !vd.paused;
+    if (vd.paused) {
+        
+    }
+    else {
+    }
+}
+
+},{}],29:[function(require,module,exports){
+var buybutton = null;
+var buytext = null;
+
+exports.create = function ()
+{
+    
+    var modalGroup = game.add.group();
+    var overlay = game.add.sprite(0, 0, "vod_overlay", null, modalGroup);
+    overlay.scale.setTo(0.5, 0.5);
+
+    var modal = game.add.sprite(1280 / 2, 720 / 2, "vod_modal_mindy", null, modalGroup);
+    modal.scale.setTo(0.5, 0.5);
+    modal.anchor.setTo(0.5, 0.5);
+    
+    
+    buybutton = game.add.sprite(650, 460, "vod_button_grey", null, modalGroup);
+    buybutton.scale.setTo(0.5, 0.5);
+    
+    buytext = game.add.text(820, 475, "Buy Now", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" }, modalGroup);
+    
+
+    modalGroup.alpha = 0;
+    
+    
+
+    game.add.tween(modalGroup).to({ alpha: 1 }, 500, Phaser.Easing.Cubic.InOut, true);
+    
+    
+
+    require("./input.js").initInput();
+}
+
+exports.update = function()
+{
+
+    buytext.anchor.x = Math.round(buytext.width * 0.5) / buytext.width;
+}
+},{"./input.js":27}],30:[function(require,module,exports){
+var cache = require("./data.js").cache;
+var scrolled = false;
+exports.create = function () {
+    scrolled = false;
+    vod_box_mult = 1;
+    
+
+    vd = game.add.video("vod_video");
+    vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
+    //vd.play(true);
+    
+    var overlay = game.add.sprite(0, 0, "vod_overlay");
+    overlay.scale.setTo(0.5, 0.5);
+    var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
+    top_shadow.scale.setTo(0.5, 0.5);
+    var logo = game.add.sprite(1048, 25, "vod_logo");
+    logo.scale.setTo(0.5, 0.5);
+    
+      
+    game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+    
+    contentgroup = game.add.group();
+    
+    var vod_static = game.add.sprite(351, 107, 'vod_look_static', null, contentgroup);
+    vod_static.scale.setTo(0.5, 0.5);
+    
+    var vod_side = game.add.sprite(0, 0, 'vod_side');
+    vod_side.scale.setTo(0.5, 0.5);
+    
+    window.vod_green = game.add.sprite(65, 147.5 - 37.5 * 0, 'vod_green_text');
+    vod_green.scale.setTo(0.5, 0.5);
+    
+    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "CovetTV", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    
+    window.vod_box = game.add.sprite(349 + 220 * 0, 224, "vod_box_med", null, contentgroup);
+    vod_box.scale.setTo(0.5, 0.5);
+    
+    require("./input.js").initInput();
+    
+    var bottom_shadow = game.add.sprite(322, 643, "vod_shadow_bottom");
+    bottom_shadow.scale.setTo(0.5, 0.5);
+    
+    var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    goUp.onDown.add(ScrollUp, this);
+    goDown.onDown.add(ScrollDown, this);
+}
+
+exports.update = function () {
+    vod_green.y = 147.5 - 37.5 * vod_green_mult;
+    if (!scrolled) {
+        vod_box.x = 349 + 288 * vod_box_mult;
+    }
+    else {
+        vod_box.x = 350 + 214 * vod_box_mult;
+    }
+}
+
+function ScrollUp() {
+    vod_box.y = 224;
+    game.add.tween(contentgroup).to({ y: 0 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box_med");
+    
+    scrolled = false;
+    vod_box_mult = 0;
+}
+
+function ScrollDown() {
+    vod_box.y = 296 + 390;
+    vod_box_mult = 0;
+    game.add.tween(contentgroup).to({ y: -382 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box_item");
+    
+    
+    scrolled = true;
+}
+},{"./data.js":26,"./input.js":27}],31:[function(require,module,exports){
 window.vod_green_mult = 0;
 window.vod_box_mult = 0;
 
 var vd;
+var showText;
+
+var texts = ["Pretty Little Liars", "Jane The Virgin", "The Mindy Project", "2 Broke Girls"]
+
+
+var contentgroup;
+
+var scrolled = false;
 
 exports.create = function () {
     
@@ -10277,9 +10513,18 @@ exports.create = function () {
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
     //vd.play(true);
     
+    var overlay = game.add.sprite(0, 0, "vod_overlay");
+    overlay.scale.setTo(0.5, 0.5);
+    var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
+    top_shadow.scale.setTo(0.5, 0.5);
+    var logo = game.add.sprite(1048, 25, "vod_logo");
+    logo.scale.setTo(0.5, 0.5);
+
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     
-    var vod_static = game.add.sprite(0, 0, 'vod_static');
+    contentgroup = game.add.group();
+
+    var vod_static = game.add.sprite(352, 102, 'vod_static', null, contentgroup);
     vod_static.scale.setTo(0.5, 0.5);
     
     var vod_side = game.add.sprite(0, 0, 'vod_side');
@@ -10288,73 +10533,170 @@ exports.create = function () {
     window.vod_green = game.add.sprite(65, 147.5 - 37.5 * 0, 'vod_green_text');
     vod_green.scale.setTo(0.5, 0.5);
     
-    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "TV On Demand", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
+    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "CovetTV", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    showText = game.add.text(0, 200+264+10, texts[0], { font: 'normal normal normal "Avenir Next"', fontWeight: "400", fill: "#DCDCDC", fontSize: "20px" }, contentgroup)
+    showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
     
-    window.vod_box = game.add.sprite(350 + 220 * 0 - 5, 200 - 5, "vod_box");
+
+    window.vod_box = game.add.sprite(352 + 220 * 0, 200, "vod_box", null, contentgroup);
     vod_box.scale.setTo(0.5, 0.5);
     
-    window.topContainer = game.add.group();
-    
-    var vod_view_15 = topContainer.create(350, 200, "vod_shows_15");
-    vod_view_15.scale.setTo(0.5, 0.5);
-    
-    var vod_madmen = topContainer.create(350 + 220 * 1, 200, "vod_shows_madmen");
-    vod_madmen.scale.setTo(0.5, 0.5);
-    
-    var vod_hoc = topContainer.create(350 + 220 * 2, 200, "vod_shows_hoc");
-    vod_hoc.scale.setTo(0.5, 0.5);
-    
-    var vod_suits = topContainer.create(350 + 220 * 3, 200, "vod_shows_suits");
-    vod_suits.scale.setTo(0.5, 0.5);
-    
-    var vod_aos = topContainer.create(350 + 220 * 4, 200, "vod_shows_aos");
-    vod_aos.scale.setTo(0.5, 0.5);
+    var bottom_shadow = game.add.sprite(322, 643, "vod_shadow_bottom");
+    bottom_shadow.scale.setTo(0.5, 0.5);
 
     require("./input.js").initInput();
+
+    var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    goUp.onDown.add(ScrollUp, this);
+    goDown.onDown.add(ScrollDown, this);
 }
 exports.update = function () {
     vod_green.y = 147.5 - 37.5 * vod_green_mult;
-    vod_box.x = 350 + 220 * vod_box_mult - 5;
+    if (!scrolled) {
+        vod_box.x = 352 + 220 * vod_box_mult;
+        showText.x = 352 + 95 + 220 * vod_box_mult;
+        showText.text = texts[vod_box_mult];
+        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+    }
+    else {
+        vod_box.x = 352 + 288 * vod_box_mult;
+        showText.x = 352 + 17 + 220 * vod_box_mult;
+        showText.text = "";
+        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+    }
 }
 
-},{"./input.js":27}],29:[function(require,module,exports){
+function ScrollUp()
+{
+    vod_box.y = 200;
+    game.add.tween(contentgroup).to({ y: 0 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box");
+
+    scrolled = false;
+    vod_box_mult = 0;
+}
+
+function ScrollDown()
+{
+    vod_box.y = 200 + 364;
+    vod_box_mult = 0;
+    game.add.tween(contentgroup).to({ y: -364 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box_big");
+
+
+    scrolled = true;
+}
+},{"./input.js":27}],32:[function(require,module,exports){
 var cache = require("./data.js").cache;
 
-var showIdToCovetIt = 
- {
-    1:"TarG7hkX22m5mbLc9",
-    //1: "wPcf4EPHeMKoGe6P2",
-    2: "cfSEQrd3rnezY4CBh",
-    3: "2Fka6jBDE27Hz2ssx"
-};
+var texts = ["Mindy Kaling", "Danny Castilano", "Jeremy Reed", "Morgan Tooker"]
+var scrolled = false;
+exports.create = function ()
+{
+    vd = game.add.video("vod_video");
+    vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
+    //vd.play(true);
+    
+    var overlay = game.add.sprite(0, 0, "vod_overlay");
+    overlay.scale.setTo(0.5, 0.5);
+    var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
+    top_shadow.scale.setTo(0.5, 0.5);
+    var logo = game.add.sprite(1048, 25, "vod_logo");
+    logo.scale.setTo(0.5, 0.5);
 
-var lookToDisplay = [];
+    game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+    
+    contentgroup = game.add.group();
+    
+    var vod_static = game.add.sprite(351, 107, 'vod_show_static', null, contentgroup);
+    vod_static.scale.setTo(0.5, 0.5);
+    
+    var vod_side = game.add.sprite(0, 0, 'vod_side');
+    vod_side.scale.setTo(0.5, 0.5);
+    
+    window.vod_green = game.add.sprite(65, 147.5 - 37.5 * 0, 'vod_green_text');
+    vod_green.scale.setTo(0.5, 0.5);
+    
+    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "CovetTV", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    showText = game.add.text(0, 296 + 264 + 10, texts[0], { font: 'normal normal normal "Avenir Next"', fontWeight: "400", fill: "#DCDCDC", fontSize: "20px" }, contentgroup)
+    showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+    
+    
+    window.vod_box = game.add.sprite(352 + 220 * 0, 296, "vod_box", null, contentgroup);
+    vod_box.scale.setTo(0.5, 0.5);
+    
+    var bottom_shadow = game.add.sprite(322, 643, "vod_shadow_bottom");
+    bottom_shadow.scale.setTo(0.5, 0.5);
+
+    require("./input.js").initInput();
+    
+    var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    goUp.onDown.add(ScrollUp, this);
+    goDown.onDown.add(ScrollDown, this);
+}
 
 exports.update = function () {
     vod_green.y = 147.5 - 37.5 * vod_green_mult;
-    vod_box.x = 350 + 220 * vod_box_mult - 5;
+    if (!scrolled) {
+        vod_box.x = 359 + 220 * vod_box_mult;
+        showText.x = 359 + 95 + 220 * vod_box_mult;
+        showText.text = texts[vod_box_mult];
+        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+    }
+    else {
+        vod_box.x = 352 + 215 * vod_box_mult;
+        showText.x = 352 + 17 + 220 * vod_box_mult;
+        showText.text = "";
+        showText.anchor.x = Math.round(showText.width * 0.5) / showText.width;
+    }
 }
 
-
-exports.preload = function () {
-    lookToDisplay.forEach(function (look) {
-        game.load.image(look._id + "_cover", look.cover);
-    });
+function ScrollUp() {
+    vod_box.y = 296;
+    game.add.tween(contentgroup).to({ y: 0 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box");
+    
+    scrolled = false;
+    vod_box_mult = 0;
 }
 
-exports.create = function ()
+function ScrollDown() {
+    vod_box.y = 296 + 382;
+    vod_box_mult = 0;
+    game.add.tween(contentgroup).to({ y: -382 }, 500, Phaser.Easing.Cubic.InOut, true);
+    vod_box.loadTexture("vod_box_item");
+    
+    
+    scrolled = true;
+}
+},{"./data.js":26,"./input.js":27}],33:[function(require,module,exports){
+exports.create = function()
 {
     vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
@@ -10362,49 +10704,48 @@ exports.create = function ()
     
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     
-    var vod_static = game.add.sprite(0, 0, 'vod_static');
+    var overlay = game.add.sprite(0, 0, "vod_overlay");
+    overlay.scale.setTo(0.5, 0.5);
+    
+    var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
+    top_shadow.scale.setTo(0.5, 0.5);
+    
+    var vod_static = game.add.sprite(352, 110, 'vod_like');
     vod_static.scale.setTo(0.5, 0.5);
     
+    var logo = game.add.sprite(1048, 25, "vod_logo");
+    logo.scale.setTo(0.5, 0.5);
+
     var vod_side = game.add.sprite(0, 0, 'vod_side');
     vod_side.scale.setTo(0.5, 0.5);
     
-    window.vod_green = game.add.sprite(65, 147.5 - 37.5 * 0, 'vod_green_text');
+    
+
+    
+    window.vod_green = game.add.sprite(65, 147.5 - 37.5 * vod_green_mult, 'vod_green_text');
     vod_green.scale.setTo(0.5, 0.5);
     
-    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "TV On Demand", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
-    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir LT Std"', fill: "#DCDCDC", fontSize: "25px" })
+    var text1 = game.add.text(75, 147.5 - 37.5 * 2 + 5, "Search", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text2 = game.add.text(75, 147.5 - 37.5 * 1 + 5, "My videos", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text3 = game.add.text(75, 147.5 - 37.5 * 0 + 5, "You might like", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text4 = game.add.text(75, 147.5 - 37.5 * -1 + 5, "CovetTV", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text5 = game.add.text(75, 147.5 - 37.5 * -2 + 5, "Featured", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text6 = game.add.text(75, 147.5 - 37.5 * -3 + 5, "New releases", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text7 = game.add.text(75, 147.5 - 37.5 * -4 + 5, "Movies", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text8 = game.add.text(75, 147.5 - 37.5 * -5 + 5, "Staff picks", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text9 = game.add.text(75, 147.5 - 37.5 * -6 + 5, "Optik Local", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text10 = game.add.text(75, 147.5 - 37.5 * -7 + 5, "En francais", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text11 = game.add.text(75, 147.5 - 37.5 * -8 + 5, "Adult only", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text12 = game.add.text(75, 147.5 - 37.5 * -9 + 5, "Help centre", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
+    var text13 = game.add.text(75, 147.5 - 37.5 * -10 + 5, "Display style", { font: 'normal normal normal "Avenir Next"', fill: "#DCDCDC", fontSize: "25px" })
     
-    window.vod_box = game.add.sprite(350 + 220 * 0 - 5, 200 - 5, "vod_box");
+    window.vod_box = game.add.sprite(350 + 220 * vod_box_mult - 5, 200 - 5, "vod_box");
     vod_box.scale.setTo(0.5, 0.5);
     
-    var counter = 0;
-    window.topContainer = game.add.group();
-    lookToDisplay.forEach(function (look) {
-        var lookImage = topContainer.create(350 + 220 * (counter++), 200, look._id + "_cover");
-        lookImage.width = 180;
-        lookImage.height = 251.5;
-    });
-   
-
+    var bottom_shadow = game.add.sprite(322, 643, "vod_shadow_bottom");
+    bottom_shadow.scale.setTo(0.5, 0.5);
+    
+    
     require("./input.js").initInput();
 }
-
-
-exports.init = function(showId)
-{
-    console.log(showId);
-    lookToDisplay = cache.looks.find({ mode: 1, rootId: showIdToCovetIt[showId] });
-}
-
-},{"./data.js":26,"./input.js":27}]},{},[25]);
+},{"./input.js":27}]},{},[25]);
