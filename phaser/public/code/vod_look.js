@@ -3,16 +3,12 @@ var scrolled = false;
 exports.create = function () {
     scrolled = false;
     vod_box_mult = 1;
-    
-
-    vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.play(true);
     
     var overlay = game.add.sprite(0, 0, "vod_overlay");
     overlay.scale.setTo(0.5, 0.5);
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
     
@@ -54,8 +50,10 @@ exports.create = function () {
     
     var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
     var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    
     goUp.onDown.add(ScrollUp, this);
     goDown.onDown.add(ScrollDown, this);
+    
 }
 
 exports.update = function () {

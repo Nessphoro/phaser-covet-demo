@@ -1,8 +1,10 @@
 ﻿exports.create = function()
 {
-    vd = game.add.video("vod_video");
+    if(!window.vd)
+        window.vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.mute = true;
+    vd.play(true);
     
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     
@@ -10,7 +12,6 @@
     overlay.scale.setTo(0.5, 0.5);
     
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     
     var vod_static = game.add.sprite(352, 110, 'vod_like');
     vod_static.scale.setTo(0.5, 0.5);

@@ -1,7 +1,6 @@
 ﻿window.vod_green_mult = 0;
 window.vod_box_mult = 0;
 
-var vd;
 var showText;
 
 var texts = ["Pretty Little Liars", "Jane The Virgin", "The Mindy Project", "2 Broke Girls"]
@@ -13,14 +12,12 @@ var scrolled = false;
 
 exports.create = function () {
     
-    vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.play(true);
     
     var overlay = game.add.sprite(0, 0, "vod_overlay");
     overlay.scale.setTo(0.5, 0.5);
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
 
@@ -67,6 +64,9 @@ exports.create = function () {
     goUp.onDown.add(ScrollUp, this);
     goDown.onDown.add(ScrollDown, this);
 }
+
+
+
 exports.update = function () {
     vod_green.y = 147.5 - 37.5 * vod_green_mult;
     if (!scrolled) {

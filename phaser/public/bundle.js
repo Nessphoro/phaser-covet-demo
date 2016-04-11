@@ -10117,6 +10117,7 @@ exports.preload = function () {
 };
 
 exports.create = function () {
+    
     game.state.start("vod_like");
 };
 },{}],25:[function(require,module,exports){
@@ -10397,6 +10398,9 @@ exports.create = function ()
     
 
     require("./input.js").initInput();
+    
+    var buy = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    buy.onDown.add(Buy, this);
 }
 
 exports.update = function()
@@ -10404,22 +10408,28 @@ exports.update = function()
 
     buytext.anchor.x = Math.round(buytext.width * 0.5) / buytext.width;
 }
+
+
+function Buy() {
+    buytext.text = "Processing...";
+    setTimeout(function () {
+        buybutton.loadTexture("vod_button_green");
+        buytext.text = "OK";
+    }, 1000);
+    
+}
 },{"./input.js":27}],30:[function(require,module,exports){
 var cache = require("./data.js").cache;
 var scrolled = false;
 exports.create = function () {
     scrolled = false;
     vod_box_mult = 1;
-    
-
-    vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.play(true);
     
     var overlay = game.add.sprite(0, 0, "vod_overlay");
     overlay.scale.setTo(0.5, 0.5);
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
     
@@ -10461,8 +10471,10 @@ exports.create = function () {
     
     var goUp = game.input.keyboard.addKey(Phaser.Keyboard.W);
     var goDown = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    
     goUp.onDown.add(ScrollUp, this);
     goDown.onDown.add(ScrollDown, this);
+    
 }
 
 exports.update = function () {
@@ -10493,11 +10505,11 @@ function ScrollDown() {
     
     scrolled = true;
 }
+
 },{"./data.js":26,"./input.js":27}],31:[function(require,module,exports){
 window.vod_green_mult = 0;
 window.vod_box_mult = 0;
 
-var vd;
 var showText;
 
 var texts = ["Pretty Little Liars", "Jane The Virgin", "The Mindy Project", "2 Broke Girls"]
@@ -10509,14 +10521,12 @@ var scrolled = false;
 
 exports.create = function () {
     
-    vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.play(true);
     
     var overlay = game.add.sprite(0, 0, "vod_overlay");
     overlay.scale.setTo(0.5, 0.5);
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
 
@@ -10563,6 +10573,9 @@ exports.create = function () {
     goUp.onDown.add(ScrollUp, this);
     goDown.onDown.add(ScrollDown, this);
 }
+
+
+
 exports.update = function () {
     vod_green.y = 147.5 - 37.5 * vod_green_mult;
     if (!scrolled) {
@@ -10606,14 +10619,12 @@ var texts = ["Mindy Kaling", "Danny Castilano", "Jeremy Reed", "Morgan Tooker"]
 var scrolled = false;
 exports.create = function ()
 {
-    vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.play(true);
     
     var overlay = game.add.sprite(0, 0, "vod_overlay");
     overlay.scale.setTo(0.5, 0.5);
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     var logo = game.add.sprite(1048, 25, "vod_logo");
     logo.scale.setTo(0.5, 0.5);
 
@@ -10698,9 +10709,11 @@ function ScrollDown() {
 },{"./data.js":26,"./input.js":27}],33:[function(require,module,exports){
 exports.create = function()
 {
-    vd = game.add.video("vod_video");
+    if(!window.vd)
+        window.vd = game.add.video("vod_video");
     vd.addToWorld(0, 0, 0, 0, 1.77778, 1.77778);
-    //vd.play(true);
+    vd.mute = true;
+    vd.play(true);
     
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     
@@ -10708,7 +10721,6 @@ exports.create = function()
     overlay.scale.setTo(0.5, 0.5);
     
     var top_shadow = game.add.sprite(322, 0, "vod_shadow_top");
-    top_shadow.scale.setTo(0.5, 0.5);
     
     var vod_static = game.add.sprite(352, 110, 'vod_like');
     vod_static.scale.setTo(0.5, 0.5);

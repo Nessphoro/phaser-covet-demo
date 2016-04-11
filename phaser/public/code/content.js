@@ -37,5 +37,6 @@
 };
 
 exports.create = function () {
+    
     game.state.start("vod_like");
 };

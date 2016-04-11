@@ -28,10 +28,23 @@ exports.create = function ()
     
 
     require("./input.js").initInput();
+    
+    var buy = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    buy.onDown.add(Buy, this);
 }
 
 exports.update = function()
 {
 
     buytext.anchor.x = Math.round(buytext.width * 0.5) / buytext.width;
+}
+
+
+function Buy() {
+    buytext.text = "Processing...";
+    setTimeout(function () {
+        buybutton.loadTexture("vod_button_green");
+        buytext.text = "OK";
+    }, 1000);
+    
 }
